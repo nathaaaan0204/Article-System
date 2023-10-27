@@ -2,7 +2,8 @@ import { Button, Card, Input, Typography } from "@material-tailwind/react";
 import React, { Fragment, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BeatLoader } from "react-spinners";
-import { dummyUsers } from "../Utils/Data";
+import axios from "axios"; // Import axios library
+
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -14,37 +15,57 @@ export const Login = () => {
     }, 3000);
   }, []);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [strUsername, setUsername] = useState("");
+  const [strPassword, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-
-
-  const simulateLogin = (email, password) => {
-    const user = dummyUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    return user || null;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
+    const data = {
+      strUsername: strUsername,
+      strPassword: strPassword
+    };
+    const url = "https://localhost:44392/api/Login/Login";
 
-    const user = simulateLogin(email, password);
+    axios.post(url, data)
+      .then((result) => {
+        const dt = result.data;
+        alert(dt.statusMessage);
+        //for student
+        const isValidUsername = (username) => {
+          return username;
+        };
+        //foradmin
+        const isValidAdminUsername = (username) => {
+          return username === "admin";
+        };
+        //forstaff
+        const isValidStaffUsername = (username) => {
+          return username === "staff";
+        };
+        ////foradmin
+        if (isValidAdminUsername(strUsername)) {
+          navigate("/Dashboard");
+          //for staff
+        } else if (isValidStaffUsername(strUsername)) {
+          navigate("/Dashboard");
+        }
+        ///for student
+        else if (isValidUsername(strUsername)) {
+          navigate("/Dashboard");
+        }
+        else {
+          setError("Invalid username. Please try again.");
+        }
 
-    if (user) {
-      // Authentication successful, redirect to the homepage or dashboard
-      // Use React Router's history.push('/') to redirect
-      // Replace '/homepage' with the actual URL where you want to redirect
-      navigate("/Dashboard");
-      console.log("User logged in:", user);
-    } else {
-      // Authentication failed, show an error message to the user
-      setError("Invalid email or password. Please try again.");
-    }
+        console.log("User logged in:", dt);
+      })
+      .catch((error) => {
+        console.log(error);
+        setError("Invalid username or password. Please try again.");
+      });
   };
 
   return (
@@ -66,38 +87,37 @@ export const Login = () => {
               <Typography className="">To access Website Name</Typography>
               <form onSubmit={handleSubmit} className="flex flex-col gap-2">
                 <Input
-                  type="email"
-                  id="email"
-                  label="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="username"
+                  id="strUsername"
+                  label="username"
+                  value={strUsername}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
 
                 <Input
                   type="password"
-                  id="password"
+                  id="strPassword"
                   label="Password"
-                  value={password}
+                  value={strPassword}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
 
                 {error && <p className="text-red-500 mb-2">{error}</p>}
-                
-                  <Button type="submit" fullWidth className="bg-green">
-                    Sign In
-                  </Button>
-                
+
+                <Button type="submit" fullWidth className="bg-green">
+                  Sign In
+                </Button>
               </form>
               <Typography className="text-left">
                 By clicking the “Sign in” button, you are entering the Website Name
-                 and therefore you agree to Company’s
+                and therefore you agree to Company’s
                 <strong className="ml-1">Terms of service</strong> and
                 <strong className="ml-1">Privacy Policy.</strong>
               </Typography>
               <Typography>
-                Don't have an account? 
+                Don't have an account?
                 {/* <Link to="/Register" className="text-green font-medium ml-1">
                   Sign Up
                 </Link> */}
