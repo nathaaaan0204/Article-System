@@ -27,47 +27,35 @@ export const Login = () => {
       strUsername: strUsername,
       strPassword: strPassword
     };
-    const url = "https://localhost:44392/api/Login/Login";
-
+    const url = "https://localhost:44392/api/Registration/Login";
+  
     axios.post(url, data)
-      .then((result) => {
-        const dt = result.data;
-        alert(dt.statusMessage);
-        //for student
-        const isValidUsername = (username) => {
-          return username;
-        };
-        //foradmin
-        const isValidAdminUsername = (username) => {
-          return username === "admin";
-        };
-        //forstaff
-        const isValidStaffUsername = (username) => {
-          return username === "staff";
-        };
-        ////foradmin
-        if (isValidAdminUsername(strUsername)) {
-          navigate("/Dashboard");
-          //for staff
-        } else if (isValidStaffUsername(strUsername)) {
-          navigate("/Dashboard");
+    .then((result) => {
+      const dt = result.data;
+      if (dt && dt.registration && dt.registration.strRole) {
+        const role = dt.registration.strRole.trim(); // Remove leading/trailing whitespace
+          if (role === "admin") {
+            alert("Admin login successful");
+            navigate("/Dashboard");
+            console.log("Admin logged in:", dt);
+          } else if (role === "staff") {
+            alert("Staff login successful");
+            navigate("/Dashboard");
+            console.log("Staff logged in:", dt);
+          } else {
+            alert("Invalid role");
+            console.log("Invalid role:", dt);
+          }
+        } else {
+          alert("Login failed");
+          console.log("Login failed:", dt);
         }
-        ///for student
-        else if (isValidUsername(strUsername)) {
-          navigate("/Dashboard");
-        }
-        else {
-          setError("Invalid username. Please try again.");
-        }
-
-        console.log("User logged in:", dt);
       })
       .catch((error) => {
         console.log(error);
         setError("Invalid username or password. Please try again.");
       });
   };
-
   return (
     <Fragment>
       {loading ? (
